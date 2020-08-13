@@ -1,0 +1,14 @@
+---
+- name: "Include OS-specific variables"
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- include_tasks: "install-{{ ansible_os_family }}.yml"
+
+- include_tasks: "configure-{{ ansible_os_family }}.yml"
+
+- name: "Enable and start openibd"
+  service:
+    name: 'openibd'
+    state: 'running'
+    enabled: yes
+

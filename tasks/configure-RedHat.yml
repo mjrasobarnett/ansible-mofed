@@ -1,0 +1,47 @@
+---
+
+- name: "Ensure yum exclusion for ibutils-libs* is set"
+  when: mofed_manage_yum_excludes | bool
+  block:
+    # Overly complex example of trying to idempotently *append* a value to
+    # the 'exclude=' line in yum.conf. Since this line could be appended to
+    # by many different roles/modules or manually by packages, we need
+    # to not stomp on whatever may have previously been set here
+    - name: "Check whether /etc/yum.conf contains any exclusions"
+      command: 'grep -E "^exclude=.*" /etc/yum.conf'
+      register: _mofed_check_yum_conf
+      check_mode: no
+      ignore_errors: yes
+      changed_when: no
+
+    - name: "Ensure any existing yum exclude line contains 'ibutils-libs*'"
+      # If exclude line is present in yum.conf, *and* it doesn't
+      # contain ibutils-libs already, then add it
+      lineinfile:
+        state: present
+        path: '/etc/yum.conf'
+        regexp: '^exclude=(.*)$'
+        line: 'exclude=\1 ibutils-libs*'
+        backrefs: yes
+      when:
+        - _mofed_check_yum_conf.rc == 0
+        - _mofed_check_yum_conf.stdout is not match(".*ibutils-libs.*")
+
+    - name: "Set yum exclude=ibutils-libs* when none previously set"
+      # If no exclude variable present in yum.conf set this
+      ini_file:
+        path: '/etc/yum.conf'
+        section: 'main'
+        option: 'exclude'
+        value: 'ibutils-libs*'
+      when:
+        - _mofed_check_yum_conf.rc == 1
+
+- name: "Set IPoIB connected or datagram mode"
+  # Utilise lineinfile here so that we *append* this value
+  # to whatever other excludes may have already been set
+  ini_file:
+    path: '/etc/infiniband/openib.conf'
+    section: null
+    option: 'SET_IPOIB_CM'
+    value: "{{ mofed_ipoib_cm }}"

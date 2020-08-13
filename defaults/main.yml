@@ -1,0 +1,26 @@
+---
+# Choose whether to install custom Yum repo to install mofed from
+mofed_manage_repo: true
+# Variables to manage custom repo configuration
+mofed_repo_name: 'mlnx-ofed'
+mofed_repo_baseurl: "https://linux.mellanox.com/public/repo/mlnx_ofed/{{ mofed_version }}/rhel{{ ansible_distribution_version }}/{{ ansible_architecture }}"
+mofed_repo_description: "Mellanox OFED Packages - Yum Repository for {{ ansible_os_family }} {{ ansible_distribution_version }} - {{ ansible_architecture }}"
+mofed_repo_enabled: true
+mofed_repo_gpgcheck: true
+mofed_repo_gpgkey: 'https://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox'
+#mofed_repo_gpgkey_fingerprint:
+
+mofed_version: 'latest'
+
+mofed_metapackage: 'mlnx-ofed-all'
+mofed_diag_utils:
+  - 'ibutils2'
+  - 'ibdump'
+  - 'perftest'
+
+mofed_update_firmware: false
+mofed_firmware_package: 'mlnx-fw-updater'
+
+mofed_manage_yum_excludes: true
+# Defaults to auto
+mofed_ipoib_cm: 'auto'

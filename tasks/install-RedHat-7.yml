@@ -1,0 +1,39 @@
+---
+- name: "Configure MOFED repository"
+  when: mofed_manage_repo | bool
+  block:
+    - name: "Install mofed yum repo"
+      yum_repository:
+        name: "{{ mofed_repo_name }}"
+        description: "{{ mofed_repo_description }}"
+        baseurl: "{{ mofed_repo_baseurl }}"
+        gpgcheck: "{{ mofed_repo_gpgcheck | default('no') }}"
+        gpgkey: "{{ mofed_repo_gpgkey | default(omit) }}"
+        enabled: "{{ mofed_repo_enabled | default('no') }}"
+      register: _mofed_repo
+
+    - name: "Install custom mofed yum repo gpgkey"
+      rpm_key:
+        state: present
+        key: "{{ mofed_repo_gpgkey }}"
+        fingerprint: "{{ mofed_repo_gpgkey_fingerprint | default(omit) }}"
+      when: mofed_repo_gpgkey is defined
+
+    - name: "Clean yum cache if repository updated"
+      command: yum clean all
+      args:
+        warn: false
+      when: _mofed_repo.changed
+
+- name: "Install MOFED metapackage"
+  yum:
+    name: "{{ mofed_metapackage }}"
+    enablerepo: "{{ mofed_repo_name | default(omit) }}"
+    state: present
+
+- name: "Install additional IB diagnostic utils"
+  yum:
+    name: "{{ item }}"
+    enablerepo: "{{ mofed_repo_name | default(omit) }}"
+    state: present
+  loop: "{{ mofed_diag_utils }}"
