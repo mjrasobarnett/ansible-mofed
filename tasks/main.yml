@@ -9,6 +9,6 @@
 - name: "Enable and start openibd"
   service:
     name: 'openibd'
-    state: 'running'
+    state: 'started'
     enabled: yes
 
