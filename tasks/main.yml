@@ -2,9 +2,16 @@
 - name: "Include OS-specific variables"
   include_vars: "{{ ansible_os_family }}.yml"
 
-- include_tasks: "install-{{ ansible_os_family }}.yml"
+- name: "Include OS-specific package installation plays"
+  include_tasks: "install-{{ ansible_os_family }}.yml"
+  when: mofed_install_via_packages | bool
 
-- include_tasks: "configure-{{ ansible_os_family }}.yml"
+- name: "Include tarball installation plays"
+  include_tasks: "install-tarball.yml"
+  when: not mofed_install_via_packages | bool
+
+- name: "Include OS-specific configuration plays"
+  include_tasks: "configure-{{ ansible_os_family }}.yml"
 
 - name: "Enable and start openibd"
   service:

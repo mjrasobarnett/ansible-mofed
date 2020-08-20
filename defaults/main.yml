@@ -1,4 +1,6 @@
 ---
+# Choose install method, either via packages or by downloading tarball and installing via script
+mofed_install_via_packages: true
 # Choose whether to install custom Yum repo to install mofed from
 mofed_manage_repo: true
 # Variables to manage custom repo configuration

@@ -1,0 +1,84 @@
+---
+
+- name: "Check for any undefined, required variables"
+  fail:
+    msg: "Variable '{{ item }}' is undefined and is needed"
+  when:
+    - item is undefined
+  loop:
+    - "{{ mofed_tarball_url }}"
+    - "{{ mofed_version }}"
+
+- name: "Check if ofed_info is present"
+  stat:
+    path: /usr/bin/ofed_info
+  changed_when: false
+  register: _ofed_info
+
+- name: "Check whether to upgrade existing MOFED"
+  when: _ofed_info.stat.exists
+  block:
+
+  - name: "Check MOFED version installed"
+    command: /usr/bin/ofed_info -n
+    changed_when: false
+    args:
+      warn: false
+    register: _ofed_version
+
+  - set_fact:
+      mofed_installed_version: "{{ _ofed_version.stdout }}"
+
+  - debug:
+      msg:
+        - "Existing OFED version installed: {{ mofed_installed_version }}"
+        - "MOFED version to be installed: {{ mofed_version }}"
+
+  - name: "Uninstall existing MOFED installation"
+    command: /usr/sbin/ofed_uninstall.sh --unload-modules --force -v
+    when: (mofed_installed_version is version( mofed_version, '<')) or not _ofed_info.stat.exists
+
+  - name: "Ensure openibd is stopped"
+    service:
+      name: 'openibd'
+      state: 'stopped'
+    when: (mofed_installed_version is version( mofed_version, '<')) or not _ofed_info.stat.exists
+
+- name: "Re-check if ofed_info is present (after uninstalling existing MOFED if present)"
+  stat:
+    path: /usr/bin/ofed_info
+  changed_when: false
+  register: _ofed_info
+
+- name: "Install MOFED from tarball"
+  when: not _ofed_info.stat.exists
+  block:
+
+  - name: "create temporary build directory"
+    tempfile:
+      state: directory
+      suffix: build
+    register: _mofed_build_dir
+
+  - name: "Download MOFED tarball"
+    get_url:
+      url: "{{ mofed_tarball_url }}"
+      dest: "{{ _mofed_build_dir.path }}"
+    register: _mofed_downloaded_tarball
+
+  - name: "Unarchive MOFED tarball"
+    unarchive:
+      src: "{{ _mofed_downloaded_tarball.dest }}"
+      dest: "{{ _mofed_build_dir.path }}"
+      remote_src: yes
+
+  - set_fact:
+      mofed_install_directory: "{{ mofed_tarball_url | regex_replace('^.*/(.*).tgz$', '\\1') }}"
+
+  - name: "Run mlnxofedinstall script to install MOFED"
+    command: "/{{ _mofed_build_dir.path }}/{{ mofed_install_directory }}/mlnxofedinstall --basic --without-fw-update --add-kernel-support -vvv"
+
+  - name: "Remove build directory"
+    file:
+      path: "{{ _mofed_build_dir.path }}"
+      state: absent
