@@ -54,6 +54,12 @@
   when: not _ofed_info.stat.exists
   block:
 
+  - name: "Install tarball build dependencies"
+    yum:
+      name: "{{ item }}"
+      state: present
+    loop: "{{ mofed_tarball_dependencies }}"
+
   - name: "create temporary build directory"
     tempfile:
       state: directory

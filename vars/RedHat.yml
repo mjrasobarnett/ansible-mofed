@@ -1,1 +1,9 @@
 ---
+mofed_tarball_dependencies:
+  - 'createrepo'
+  - 'python-devel'
+  - 'redhat-rpm-config'
+  - 'rpm-build'
+  - 'gcc'
+  - 'tcl'
+  - 'tk'
