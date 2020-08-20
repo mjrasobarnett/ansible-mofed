@@ -45,3 +45,4 @@
     section: null
     option: 'SET_IPOIB_CM'
     value: "{{ mofed_ipoib_cm }}"
+    no_extra_spaces: yes
