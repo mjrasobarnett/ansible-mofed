@@ -16,6 +16,7 @@ mofed_version: 'latest'
 
 mofed_metapackage: 'mlnx-ofed-all'
 mofed_diag_utils:
+  - 'infiniband-diags'
   - 'ibutils2'
   - 'ibdump'
   - 'perftest'
