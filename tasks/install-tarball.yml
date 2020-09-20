@@ -83,6 +83,7 @@
 
   - name: "Run mlnxofedinstall script to install MOFED"
     command: "/{{ _mofed_build_dir.path }}/{{ mofed_install_directory }}/mlnxofedinstall --basic --without-fw-update --add-kernel-support -vvv"
+    register: "_mofed_install_result"
 
   - name: "Remove build directory"
     file:

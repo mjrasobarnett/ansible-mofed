@@ -36,6 +36,7 @@
     name: "{{ mofed_metapackage }}"
     enablerepo: "{{ mofed_repo_name | default(omit) }}"
     state: present
+  register: "_mofed_install_result"
 
 - name: "Install additional IB diagnostic utils"
   yum:

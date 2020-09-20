@@ -13,9 +13,33 @@
 - name: "Include OS-specific configuration plays"
   include_tasks: "configure-{{ ansible_os_family }}.yml"
 
-- name: "Enable and start openibd"
+- name: "Ensure openibd is cleanly stopped and all related modules are unloaded"
+  when: _mofed_install_result is changed
+  block:
+    # I haven't found openibd to start cleanly after installation, so I have
+    # needed to use the following procedure to ensure that this happens cleanly
+    - name: "Ensure openibd is stopped"
+      service:
+        name: 'openibd'
+        state: 'stopped'
+
+    - name: "Ensure all related kernel modules are unloaded"
+      command: /usr/sbin/modprobe -r {{ item }}
+      loop:
+        - 'ib_isert'
+        - 'ib_srpt'
+        - 'rpcrdma'
+
+- name: "Ensure openibd is started and enabled"
   service:
     name: 'openibd'
     state: 'started'
     enabled: yes
 
+- name: "Wait for ibstatus to show link state as 'ACTIVE'"
+  command: "ibstatus"
+  register: _mofed_ibstatus_result
+  until: '"ACTIVE" in _mofed_ibstatus_result.stdout'
+  # Will wait for 60 seconds
+  retries: 6
+  delay: 10
