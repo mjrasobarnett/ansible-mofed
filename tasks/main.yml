@@ -43,3 +43,4 @@
   # Will wait for 60 seconds
   retries: 6
   delay: 10
+  changed_when: false
