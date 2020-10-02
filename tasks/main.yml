@@ -35,10 +35,12 @@
     name: 'openibd'
     state: 'started'
     enabled: yes
+  register: _mofed_openibd_result
 
 - name: "Wait for ibstatus to show link state as 'ACTIVE'"
   command: "ibstatus"
   register: _mofed_ibstatus_result
+  when: _mofed_openibd_result.changed
   until: '"ACTIVE" in _mofed_ibstatus_result.stdout'
   # Will wait for 60 seconds
   retries: 6
