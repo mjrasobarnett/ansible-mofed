@@ -11,6 +11,7 @@ mofed_repo_enabled: true
 mofed_repo_gpgcheck: true
 mofed_repo_gpgkey: 'https://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox'
 #mofed_repo_gpgkey_fingerprint:
+mofed_openibd_start: true
 
 mofed_version: 'latest'
 
