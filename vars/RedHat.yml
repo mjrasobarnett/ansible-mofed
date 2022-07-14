@@ -7,3 +7,4 @@ mofed_tarball_dependencies:
   - 'gcc'
   - 'tcl'
   - 'tk'
+  - 'libtool'
